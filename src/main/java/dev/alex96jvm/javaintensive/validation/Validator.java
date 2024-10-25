@@ -17,6 +17,12 @@ public class Validator {
         }
     }
 
+    public void validateId(Long id) throws InternException {
+        if (id == null || id <= 0) {
+            throw new InternException("Id must be a positive number");
+        }
+    }
+
     private void validateLength(String data, String value) throws InternException {
         if (data.length() < 2 || data.length() > 30) {
             throw new InternException(String.format("%s can not be less than 2 and more than 30 symbols", value));

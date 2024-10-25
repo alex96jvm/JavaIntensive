@@ -2,8 +2,10 @@ package dev.alex96jvm.javaintensive.servlet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.alex96jvm.javaintensive.dao.InternDao;
+import dev.alex96jvm.javaintensive.dao.MarksDao;
 import dev.alex96jvm.javaintensive.dao.impl.DatabaseConnection;
 import dev.alex96jvm.javaintensive.dao.impl.InternDaoJdbc;
+import dev.alex96jvm.javaintensive.dao.impl.MarksDaoJdbc;
 import dev.alex96jvm.javaintensive.dto.InternDto;
 import dev.alex96jvm.javaintensive.dto.MarkDto;
 import dev.alex96jvm.javaintensive.exception.InternException;
@@ -14,6 +16,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.sql.Connection;
 import java.util.List;
 import java.util.Optional;
 /**
@@ -43,22 +46,28 @@ public class ControllerServlet extends HttpServlet {
 
     @Override
     public void init() {
-        InternDao internDao = new InternDaoJdbc(DatabaseConnection.getConnection());
-        this.internService = new DefaultInternService(internDao);
+        Connection connection = DatabaseConnection.getConnection();
+        MarksDao marksDao = new MarksDaoJdbc(connection);
+        InternDao internDao = new InternDaoJdbc(connection, marksDao);
+        this.internService = new DefaultInternService(internDao, marksDao);
     }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        String pathInfo = req.getPathInfo();
-        if (pathInfo == null || pathInfo.equals("/")) {
-            List<InternDto> interns = internService.getAllInterns();
-            writeResponseAsJson(resp, interns);
-        } else if (pathInfo.matches("/\\d{1,10}")) {
-            Long id = Long.parseLong(pathInfo.substring(1));
-            Optional<InternDto> internOpt = internService.getInternById(id);
-            writeInternResponse(internOpt, resp);
-        } else {
-            writeErrorResponse(resp, HttpServletResponse.SC_NOT_FOUND, "Page not found");
+        try {
+            String pathInfo = req.getPathInfo();
+            if (pathInfo == null || pathInfo.equals("/")) {
+                List<InternDto> interns = internService.getAllInterns();
+                writeResponseAsJson(resp, interns);
+            } else if (pathInfo.matches("/\\d{1,10}")) {
+                Long id = Long.parseLong(pathInfo.substring(1));
+                Optional<InternDto> internOpt = internService.getInternById(id);
+                writeInternResponse(internOpt, resp);
+            } else {
+                writeErrorResponse(resp, HttpServletResponse.SC_NOT_FOUND, "Page not found");
+            }
+        } catch (InternException internException) {
+            writeErrorResponse(resp, HttpServletResponse.SC_BAD_REQUEST, internException.getMessage());
         }
     }
 
@@ -85,17 +94,21 @@ public class ControllerServlet extends HttpServlet {
 
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        String pathInfo = req.getPathInfo();
-        if (pathInfo.matches("/\\d{1,10}")) {
-            Long id = Long.parseLong(pathInfo.substring(1));
-            boolean deleted = internService.deleteIntern(id);
-            if (deleted) {
-                resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
+        try {
+            String pathInfo = req.getPathInfo();
+            if (pathInfo.matches("/\\d{1,10}")) {
+                Long id = Long.parseLong(pathInfo.substring(1));
+                boolean deleted = internService.deleteIntern(id);
+                if (deleted) {
+                    resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
+                } else {
+                    writeErrorResponse(resp, HttpServletResponse.SC_NOT_FOUND, "Intern not found");
+                }
             } else {
-                writeErrorResponse(resp, HttpServletResponse.SC_NOT_FOUND, "Intern not found");
+                writeErrorResponse(resp, HttpServletResponse.SC_BAD_REQUEST, "ID is required for deletion");
             }
-        } else {
-            writeErrorResponse(resp, HttpServletResponse.SC_BAD_REQUEST, "ID is required for deletion");
+        } catch (InternException internException) {
+            writeErrorResponse(resp, HttpServletResponse.SC_BAD_REQUEST, internException.getMessage());
         }
     }
 

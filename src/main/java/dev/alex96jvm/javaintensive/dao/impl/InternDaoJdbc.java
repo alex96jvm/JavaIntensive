@@ -1,6 +1,7 @@
 package dev.alex96jvm.javaintensive.dao.impl;
 
 import dev.alex96jvm.javaintensive.dao.InternDao;
+import dev.alex96jvm.javaintensive.dao.MarksDao;
 import dev.alex96jvm.javaintensive.model.InternEntity;
 import dev.alex96jvm.javaintensive.model.MarkEntity;
 import java.sql.*;
@@ -10,11 +11,13 @@ import java.util.Optional;
 import java.util.logging.Logger;
 
 public class InternDaoJdbc implements InternDao {
-    private final Logger logger;
     private final Connection connection;
+    private final MarksDao marksDao;
+    private final Logger logger;
 
-    public InternDaoJdbc(Connection connection) {
+    public InternDaoJdbc(Connection connection, MarksDao marksDao) {
         this.connection = connection;
+        this.marksDao = marksDao;
         logger = Logger.getLogger(InternDaoJdbc.class.getName());
     }
 
@@ -30,7 +33,7 @@ public class InternDaoJdbc implements InternDao {
                         id,
                         resultSet.getString("firstname"),
                         resultSet.getString("lastname"),
-                        getMarksByInternId(id)
+                        marksDao.getMarksByInternId(id)
                 ));
             }
         } catch (SQLException e) {
@@ -40,15 +43,13 @@ public class InternDaoJdbc implements InternDao {
     }
 
     @Override
-    public Optional<InternEntity> readById(Long id) {
-        Optional<InternEntity> intern = getInternDetailsById(id);
-        if (intern.isPresent()) {
-            List<MarkEntity> markEntities = getMarksByInternId(id);
-            InternEntity internEntity = intern.get();
+    public InternEntity readById(Long id) {
+        InternEntity internEntity = getInternDetailsById(id).orElse(null);
+        if (internEntity != null) {
+            List<MarkEntity> markEntities = marksDao.getMarksByInternId(id);
             internEntity.setMarks(markEntities);
-            return Optional.of(internEntity);
         }
-        return Optional.empty();
+        return internEntity;
     }
 
     public InternEntity create(InternEntity internEntity) {
@@ -66,20 +67,6 @@ public class InternDaoJdbc implements InternDao {
             logger.warning(e.getMessage());
         }
         return internEntity;
-    }
-
-    @Override
-    public Optional<InternEntity> update(MarkEntity markEntity) {
-        String query = "INSERT INTO marks (subject, mark, intern_id) VALUES (?, ?, ?) ";
-        try (PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setString(1, markEntity.getSubject());
-            statement.setInt(2, markEntity.getMark());
-            statement.setLong(3, markEntity.getInternId());
-            statement.execute();
-        } catch (SQLException e) {
-            logger.warning(e.getMessage());
-        }
-        return readById(markEntity.getInternId());
     }
 
     @Override
@@ -110,23 +97,5 @@ public class InternDaoJdbc implements InternDao {
             logger.warning(e.getMessage());
         }
         return Optional.empty();
-    }
-
-    private List<MarkEntity> getMarksByInternId(Long internId) {
-        String query = "SELECT * FROM marks WHERE intern_id = ?";
-        List<MarkEntity> marks = new ArrayList<>();
-        try (PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setLong(1, internId);
-            ResultSet resultSet = statement.executeQuery();
-            while (resultSet.next()) {
-                Long markId = resultSet.getLong("id");
-                String subject = resultSet.getString("subject");
-                int mark = resultSet.getInt("mark");
-                marks.add(new MarkEntity(markId, subject, mark, internId));
-            }
-        } catch (SQLException e) {
-            logger.warning(e.getMessage());
-        }
-        return marks;
     }
 }

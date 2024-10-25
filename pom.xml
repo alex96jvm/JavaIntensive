@@ -9,24 +9,31 @@
 
   <properties>
     <org.mapstruct.version>1.6.2</org.mapstruct.version>
+    <org.postgresql.version>42.7.4</org.postgresql.version>
+    <javax.servlet.version>4.0.1</javax.servlet.version>
+    <com.fasterxml.jackson.core.version>2.18.0</com.fasterxml.jackson.core.version>
+    <org.junit.jupiter.version>5.11.3</org.junit.jupiter.version>
+    <org.mockito.version>5.14.2</org.mockito.version>
+    <com.h2database.version>2.3.232</com.h2database.version>
+    <org.apache.maven.plugins.version>3.8.1</org.apache.maven.plugins.version>
   </properties>
 
   <dependencies>
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
-      <version>42.7.4</version>
+      <version>${org.postgresql.version}</version>
     </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>javax.servlet-api</artifactId>
-      <version>4.0.1</version>
+      <version>${javax.servlet.version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
-      <version>2.18.0</version>
+      <version>${com.fasterxml.jackson.core.version}</version>
     </dependency>
     <dependency>
       <groupId>org.mapstruct</groupId>
@@ -36,19 +43,19 @@
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
-      <version>5.11.3</version>
+      <version>${org.junit.jupiter.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <version>5.14.2</version>
+      <version>${org.mockito.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.h2database</groupId>
       <artifactId>h2</artifactId>
-      <version>2.3.232</version>
+      <version>${com.h2database.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -59,7 +66,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.8.1</version>
+        <version>${org.apache.maven.plugins.version}</version>
         <configuration>
           <source>1.17</source>
           <target>1.17</target>

@@ -10,11 +10,11 @@ import java.util.Optional;
 public interface InternService {
     List<InternDto> getAllInterns();
 
-    Optional<InternDto> getInternById(Long id);
+    Optional<InternDto> getInternById(Long id) throws InternException;
 
     InternDto createIntern(InternDto internDto) throws InternException;
 
     Optional<InternDto> updateInternMarks(MarkDto markDto) throws InternException;
 
-    Boolean deleteIntern(Long id);
+    Boolean deleteIntern(Long id) throws InternException;
 }

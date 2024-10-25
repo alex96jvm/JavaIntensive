@@ -1,6 +1,7 @@
 package dev.alex96jvm.javaintensive.service.impl;
 
 import dev.alex96jvm.javaintensive.dao.InternDao;
+import dev.alex96jvm.javaintensive.dao.MarksDao;
 import dev.alex96jvm.javaintensive.dto.InternDto;
 import dev.alex96jvm.javaintensive.dto.MarkDto;
 import dev.alex96jvm.javaintensive.exception.InternException;
@@ -23,6 +24,9 @@ class DefaultInternServiceTest {
     private DefaultInternService internService;
     @Mock
     private InternDao internDao;
+    @Mock
+    private MarksDao marksDao;
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
@@ -43,9 +47,9 @@ class DefaultInternServiceTest {
     }
 
     @Test
-    void testGetInternById() {
+    void testGetInternById() throws InternException {
         InternEntity internEntity = new InternEntity(5L, "Ivan", "Ivanov", Collections.emptyList());
-        when(internDao.readById(5L)).thenReturn(Optional.of(internEntity));
+        when(internDao.readById(5L)).thenReturn(internEntity);
 
         Optional<InternDto> internDto = internService.getInternById(5L);
 
@@ -71,7 +75,7 @@ class DefaultInternServiceTest {
     }
 
     @Test
-    void testDeleteIntern() {
+    void testDeleteIntern() throws InternException {
         when(internDao.delete(10L)).thenReturn(true);
 
         Boolean deleted = internService.deleteIntern(10L);
@@ -86,14 +90,19 @@ class DefaultInternServiceTest {
         markDto.setSubject("Java Core");
         markDto.setMark(3);
         markDto.setInternId(4L);
-        InternEntity internEntity = new InternEntity(3L, "Oleg", "Semin",
-                List.of(new MarkEntity(1L, "Java Core", 5, 3L)));
-        when(internDao.update(any(MarkEntity.class))).thenReturn(Optional.of(internEntity));
+        MarkEntity markEntity = new MarkEntity(1L, "Java Core", 5, 4L);  // ID интерна должен быть 4L
+        when(marksDao.updateInternMarks(any(MarkEntity.class))).thenReturn(markEntity);
+        List<MarkEntity> marksList = List.of(markEntity);
+        InternEntity internEntity = new InternEntity(4L, "Andrey", "Andreev", marksList);
+        when(internDao.readById(4L)).thenReturn(internEntity);
 
         Optional<InternDto> updatedIntern = internService.updateInternMarks(markDto);
-        assertNotNull(updatedIntern.orElseThrow().getMarks());
-        assertInstanceOf(List.class, updatedIntern.orElseThrow().getMarks());
-        verify(internDao, times(1)).update(any(MarkEntity.class));
+
+        assertTrue(updatedIntern.isPresent());
+        assertNotNull(updatedIntern.get().getMarks());
+        assertInstanceOf(List.class, updatedIntern.get().getMarks());
+        verify(marksDao, times(1)).updateInternMarks(any(MarkEntity.class));
+        verify(internDao, times(1)).readById(4L);
     }
 }
 
