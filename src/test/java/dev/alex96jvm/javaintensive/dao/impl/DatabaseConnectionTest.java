@@ -1,6 +1,7 @@
 package dev.alex96jvm.javaintensive.dao.impl;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -12,7 +13,7 @@ public class DatabaseConnectionTest {
     @Test
     public void testGetConnection() {
         Connection mockedConnection = Mockito.mock(Connection.class);
-        try (var mockedStatic = mockStatic(DriverManager.class)) {
+        try (MockedStatic<DriverManager> mockedStatic = mockStatic(DriverManager.class)) {
             mockedStatic.when(() -> DriverManager.getConnection(anyString(), anyString(), anyString()))
                     .thenReturn(mockedConnection);
 
