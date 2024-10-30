@@ -6,7 +6,6 @@
   <packaging>war</packaging>
   <version>1.0</version>
   <url>https://github.com/alex96jvm</url>
-
   <properties>
     <org.mapstruct.version>1.6.2</org.mapstruct.version>
     <org.postgresql.version>42.7.4</org.postgresql.version>
@@ -17,7 +16,6 @@
     <com.h2database.version>2.3.232</com.h2database.version>
     <org.apache.maven.plugins.version>3.8.1</org.apache.maven.plugins.version>
   </properties>
-
   <dependencies>
     <dependency>
       <groupId>org.postgresql</groupId>
@@ -59,7 +57,6 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
-
   <build>
     <finalName>java-intensive</finalName>
     <plugins>
