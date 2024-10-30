@@ -17,6 +17,7 @@
     <com.h2database.version>2.3.232</com.h2database.version>
     <org.apache.maven.plugins.version>3.8.1</org.apache.maven.plugins.version>
   </properties>
+
   <dependencies>
     <dependency>
       <groupId>org.postgresql</groupId>
@@ -58,6 +59,7 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
   <build>
     <finalName>java-intensive</finalName>
     <plugins>
